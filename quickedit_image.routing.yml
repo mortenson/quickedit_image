@@ -1,0 +1,25 @@
+quickedit_image.upload:
+  path: '/quickedit_image/{entity_type}/{entity}/{field_name}/{langcode}/{view_mode_id}'
+  defaults:
+    _controller: '\Drupal\quickedit_image\Controller\QuickeditImageController::upload'
+  options:
+    parameters:
+      entity:
+        type: entity:{entity_type}
+  requirements:
+    _permission: 'access in-place editing'
+    _access_quickedit_entity_field: 'TRUE'
+    _method: 'POST'
+
+quickedit_image.info:
+  path: '/quickedit_image/{entity_type}/{entity}/{field_name}/{langcode}/{view_mode_id}/info'
+  defaults:
+    _controller: '\Drupal\quickedit_image\Controller\QuickeditImageController::getInfo'
+  options:
+    parameters:
+      entity:
+        type: entity:{entity_type}
+  requirements:
+    _permission: 'access in-place editing'
+    _access_quickedit_entity_field: 'TRUE'
+    _method: 'GET'

@@ -1,0 +1,9 @@
+quickedit_image.inPlaceEditor.image:
+  version: VERSION
+  js:
+    js/editors/image.js: {}
+  css:
+    component:
+      css/editors/image.css: {}
+  dependencies:
+    - quickedit/quickedit

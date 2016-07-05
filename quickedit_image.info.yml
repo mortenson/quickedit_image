@@ -1,0 +1,8 @@
+type: module
+name: Quickedit Image
+description: 'Provides a drag+drop in-place editor for images, with a form fallback.'
+package: Quickedit Image
+core: 8.x
+dependencies:
+  - image
+  - quickedit

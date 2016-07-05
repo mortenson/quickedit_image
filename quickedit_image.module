@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * Implements hook_field_formatter_info_alter().
+ */
+function quickedit_image_field_formatter_info_alter(&$formatters) {
+  $formatters['image']['quickedit']['editor'] = 'image';
+}
