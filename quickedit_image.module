@@ -5,4 +5,7 @@
  */
 function quickedit_image_field_formatter_info_alter(&$formatters) {
   $formatters['image']['quickedit']['editor'] = 'image';
+  if (isset($formatters['responsive_image'])) {
+    $formatters['responsive_image']['quickedit']['editor'] = 'image';
+  }
 }
