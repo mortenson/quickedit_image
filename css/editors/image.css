@@ -1,5 +1,6 @@
 .quickedit-image-element {
-
+  min-width: 200px;
+  min-height: 200px;
 }
 
 .quickedit-image-dropzone {
