@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Image\ImageFactory;
 use Drupal\Core\Render\Element\StatusMessages;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\file\FileInterface;
 use Drupal\image\Plugin\Field\FieldType\ImageItem;
 use Drupal\user\PrivateTempStoreFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -107,32 +108,12 @@ class QuickeditImageController extends ControllerBase {
     if (is_array($result) && $result[0]) {
       /** @var \Drupal\file\Entity\File $file */
       $file = $result[0];
-      $image = $this->imageFactory->get($file->getFileUri());
 
       // Set the value in the Entity to the new file.
-      /** @var \Drupal\file\Plugin\Field\FieldType\FileFieldItemList $field_list */
-      $value = $entity->$field_name->getValue();
-      $value[0]['target_id'] = $file->id();
-      $value[0]['width'] = $image->getWidth();
-      $value[0]['height'] = $image->getHeight();
-      $entity->$field_name->setValue($value);
+      $this->saveEntity($entity, $field_name, $file);
 
       // Render the new image using the correct formatter settings.
-      $entity_view_mode_ids = array_keys($this->entityManager()->getViewModes($entity->getEntityTypeId()));
-      if (in_array($view_mode_id, $entity_view_mode_ids)) {
-        $output = $entity->$field_name->view($view_mode_id);
-      }
-      else {
-        // Each part of a custom (non-Entity Display) view mode ID is separated
-        // by a dash; the first part must be the module name.
-        $mode_id_parts = explode('-', $view_mode_id, 2);
-        $module = reset($mode_id_parts);
-        $args = [$entity, $field_name, $view_mode_id, $langcode];
-        $output = $this->moduleHandler()->invoke($module, 'quickedit_render_field', $args);
-      }
-
-      // Save the Entity to tempstore.
-      $this->tempStore->set($entity->uuid(), $entity);
+      $output = $this->buildImage($entity, $field_name, $view_mode_id, $langcode);
 
       $data = [
         'fid' => $file->id(),
@@ -208,6 +189,64 @@ class QuickeditImageController extends ControllerBase {
     }
 
     return $field;
+  }
+
+  /**
+   * Sets an Entity's field value to use the new Image and save it in temp store.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity of which an image field is being rendered.
+   * @param string $field_name
+   *   The name of the (image) field that is being rendered
+   * @param \Drupal\file\FileInterface $file
+   *   The new File.
+   */
+  protected function saveEntity(EntityInterface $entity, $field_name, FileInterface $file) {
+    // Get the Image object.
+    $image = $this->imageFactory->get($file->getFileUri());
+
+    // Set appropriate values.
+    /** @var \Drupal\file\Plugin\Field\FieldType\FileFieldItemList $field_list */
+    $value = $entity->$field_name->getValue();
+    $value[0]['target_id'] = $file->id();
+    $value[0]['width'] = $image->getWidth();
+    $value[0]['height'] = $image->getHeight();
+    $entity->$field_name->setValue($value);
+
+    // Save the Entity to tempstore.
+    $this->tempStore->set($entity->uuid(), $entity);
+  }
+
+  /**
+   * Builds a renderable array that represents the given field.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity of which an image field is being rendered.
+   * @param string $field_name
+   *   The name of the (image) field that is being rendered
+   * @param string $langcode
+   *   The language code of the field that is being rendered.
+   * @param string $view_mode_id
+   *   The view mode of the field that is being rendered.
+   *
+   * @return array
+   *   A renderable array.
+   */
+  protected function buildImage(EntityInterface $entity, $field_name, $view_mode_id, $langcode) {
+    $entity_view_mode_ids = array_keys($this->entityManager()->getViewModes($entity->getEntityTypeId()));
+    if (in_array($view_mode_id, $entity_view_mode_ids)) {
+      $output = $entity->$field_name->view($view_mode_id);
+    }
+    else {
+      // Each part of a custom (non-Entity Display) view mode ID is separated
+      // by a dash; the first part must be the module name.
+      $mode_id_parts = explode('-', $view_mode_id, 2);
+      $module = reset($mode_id_parts);
+      $args = [$entity, $field_name, $view_mode_id, $langcode];
+      $output = $this->moduleHandler()->invoke($module, 'quickedit_render_field', $args);
+    }
+
+    return $output;
   }
 
 }
