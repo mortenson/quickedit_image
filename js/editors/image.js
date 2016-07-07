@@ -197,23 +197,30 @@
       data.append('files[image]', file);
 
       // Construct a POST request to our endpoint.
-      var self = this;
-      this.ajax('POST', url, data, function (response) {
-        var $el = $(self.fieldModel.get('el'));
+      this.ajax('POST', url, data, this.handleUploadResponse);
+    },
 
-        // Indicate that the field has changed - this enables the
-        // "Save" button.
-        self.fieldModel.set('state', 'changed');
-        self.fieldModel.get('entity').set('inTempStore', true);
-        self.removeValidationErrors();
+    /**
+     * AJAX success handler for File uploads.
+     *
+     * @param {object} response
+     *   A response object passed on by $.ajax.
+     */
+    handleUploadResponse: function (response) {
+      var $el = $(this.fieldModel.get('el'));
 
-        // Replace our innerHTML with the new image. If we replaced
-        // our entire element with data.html, we would have to
-        // implement complicated logic like what's in
-        // Drupal.quickedit.AppView.renderUpdatedField.
-        var content = $(response.html).closest('[data-quickedit-field-id]').html();
-        $el.html(content);
-      });
+      // Indicate that the field has changed - this enables the
+      // "Save" button.
+      this.fieldModel.set('state', 'changed');
+      this.fieldModel.get('entity').set('inTempStore', true);
+      this.removeValidationErrors();
+
+      // Replace our innerHTML with the new image. If we replaced
+      // our entire element with data.html, we would have to
+      // implement complicated logic like what's in
+      // Drupal.quickedit.AppView.renderUpdatedField.
+      var content = $(response.html).closest('[data-quickedit-field-id]').html();
+      $el.html(content);
     },
 
     /**
@@ -247,7 +254,7 @@
             this.showValidationErrors();
           }
           else {
-            callback(response);
+            callback.call(this, response);
           }
         },
         error: function() {
